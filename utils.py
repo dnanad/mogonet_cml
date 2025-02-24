@@ -414,6 +414,36 @@ def create_dict_from_col(df: pd.DataFrame, key_col: str, value_col: str) -> dict
     return {key: value for key, value in zip(df[key_col], df[value_col])}
 
 
+def labels_to_startify_data(
+    stratify: bool,
+    labels_df: pd.DataFrame,
+    strat_col_list: list,
+    y: pd.DataFrame,
+    labels_dict: dict,
+):
+    """Create labels from the list of columns to stratify the data
+
+    Args:
+        stratify (bool): Whether to stratify the data
+        labels_df (pd.DataFrame): DataFrame containing the labels
+        strat_col_list (list): List of columns to use for stratification
+        y (pd.DataFrame): DataFrame containing the target variable
+        labels_dict (dict): Dictionary to store the labels
+
+    Returns:
+        tuple: y_strat and strat_dict if stratify is True, else None
+    """
+    if stratify:
+        labels_df["strat_col"] = labels_df[strat_col_list].apply(
+            lambda row: "_".join(row.values.astype(str)), axis=1
+        )
+        y_strat = labels_df["strat_col"]
+        strat_dict = create_dict_from_col(labels_df, "Maternal_woman_id", "strat_col")
+        return y_strat, strat_dict
+    else:
+        return y, labels_dict
+
+
 def save_feat_name(
     j: int,
     df: pd.DataFrame,
