@@ -17,7 +17,7 @@ This repository contains a comprehensive pipeline for multi-omic data analysis, 
 
 ## Introduction
 
-Multi-omic data analysis involves integrating and analyzing multiple types of omics data to gain a holistic understanding of biological systems. This pipeline leverages the MOGONET framework to apply Graph Neural Networks (GNNs) for this purpose and includes additional components for preprocessing, classical ML model evaluation, and result aggregation. Its is adapted from the original MOGONET implementation by [Wang et al. (2021)](https://github.com/txWang/MOGONET.git). We have adpated for cfRNa and Metabolomics data.
+Multi-omic data analysis involves integrating and analyzing multiple types of omics data to gain a holistic understanding of biological systems. This pipeline leverages the MOGONET framework to apply Graph Neural Networks (GNNs) for this purpose and includes additional components for preprocessing, classical ML model evaluation, and result aggregation. Its is adapted from the original MOGONET implementation by [Wang et al. (2021)](https://github.com/txWang/MOGONET.git). We have adpated for cfRNA and Metabolomics data.
 
 ![MOGONET](images/mogonet.png)
 
@@ -25,19 +25,19 @@ Multi-omic data analysis involves integrating and analyzing multiple types of om
 ## Features
 
 - **Feature Selection and Preprocessing**: Automated feature selection and data preprocessing to ensure high-quality input for models.
-- **Classical Machine Learning Models**: Baseline models for performance comparison.
 - **Graph Neural Networks with MOGONET**: Advanced modeling using GNNs for multi-omic data.
+- **Classical Machine Learning Models**: Baseline models for performance comparison.
 - **Result Aggregation**: Comprehensive aggregation and comparison of model results.
 
 ## Pipeline Overview
 
 The pipeline consists of the following main scripts:
 
-1. **preprocessing.py**: Handles feature selection, data preprocessing, and train-test splitting.
-2. **mogonet.py**: Core script for training the MOGONET model.
-3. **cml.py**: Implements classical machine learning models for baseline performance.
-4. **result_aggregator.py**: Aggregates and compares results from classical ML and MOGONET models.
-5. **biomarker.py**: Identifies biomarkers from the MOGONET model.
+1. **[preprocessing.py](preprocessing.py)**: Handles feature selection, data preprocessing, and train-test splitting.
+2. **[mogonet.py](mogonet.py)**: Core script for training the MOGONET model.
+3. **[cml.py](cml.py)**: Implements classical machine learning models for baseline performance.
+4. **[result_aggregator.py](result_aggregator.py)**: Aggregates and compares results from classical ML and MOGONET models.
+5. **[biomarker.py](biomarker.py)**: Identifies biomarkers from the MOGONET model.
 
 The pipeline is designed to be modular, allowing users to easily customize and extend it for their own datasets and models.
 
@@ -65,6 +65,23 @@ The pipeline is designed to be modular, allowing users to easily customize and e
 
 ## Usage
 
+For step-step understanding of the pipeline, please refer to the [notebook](execute_step-bystep.pynb).
+
+```bash
+python3 main.py --data_folder "0_new_data" \ #name of the folder containing the data
+                --stratify \ #whether to stratify the data, if not then use --no_stratify
+                --CV \ # whether to use cross-validation, if not then use --no_CV
+                --n_splits 5 \ # number of splits for cross-validation in case of CV
+                --num_epoch_pretrain 400 \ # number of epochs for pretraining
+                --num_epoch 1200 \ # number of epochs for training
+                --test_interval 50 \ # interval for testing
+                --lr_e_pretrain 1e-3 \ # learning rate for encoder pretraining
+                --lr_e 5e-3 \ # learning rate for encoder
+                --lr_c 1e-3 \ # learning rate for classifier
+                --num_class 2 \ # number of classes
+                --adj_parameter 2 \ # adjacency matrix parameter
+                --dim_he_list "[200, 200, 100]" # hidden layer dimensions
+```
 
 
 ## Contributing
