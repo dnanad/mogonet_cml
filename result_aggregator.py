@@ -1,4 +1,11 @@
-# agrregate all the scores in one df
+"""
+==============================================================================
+Created on Tue 25 Feb 2025 00:08:00
+Author: Anand Deshpande
+Script: result_aggregator.py
+Description: The script aggregates the results from the CML model and the MOGONET model.
+==============================================================================
+"""
 
 import pandas as pd
 import os
