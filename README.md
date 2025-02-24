@@ -30,16 +30,16 @@ Multi-omic data analysis involves integrating and analyzing multiple types of om
 
 The pipeline consists of the following main scripts:
 
-1. **main_preprocessing.py**: Handles feature selection, data preprocessing, and train-test splitting.
-2. **main_cml.py**: Implements classical machine learning models for baseline performance.
-3. **main_mogonet.py**: Core script for training the MOGONET model.
-4. **main_result_aggregator.py**: Aggregates and compares results from classical ML and MOGONET models.
+1. **preprocessing.py**: Handles feature selection, data preprocessing, and train-test splitting.
+2. **mogonet.py**: Core script for training the MOGONET model.
+3. **cml.py**: Implements classical machine learning models for baseline performance.
+4. **result_aggregator.py**: Aggregates and compares results from classical ML and MOGONET models.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Python 3.7 or higher
+- Python 3.9
 - Required Python packages (see `requirements.txt`)
 
 ### Installation
