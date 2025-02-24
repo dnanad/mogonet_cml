@@ -72,6 +72,8 @@ IMPORTANT: Each subfolder should contain a CSV file with the omic data, and the 
 
 For step-step understanding of the pipeline, please refer to the [notebook](execute_step-by-step.ipynb).
 
+Example command to run the pipeline:
+
 ```bash
 python3 main.py --data_folder "0_new_data" \ #name of the folder containing the omic-data 
                 --stratify \ #whether to stratify the data, if not then use --no_stratify
