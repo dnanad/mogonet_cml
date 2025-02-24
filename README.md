@@ -41,6 +41,8 @@ The pipeline consists of the following main scripts:
 
 The pipeline is designed to be modular, allowing users to easily customize and extend it for their own datasets and models.
 
+
+
 ![Pipeline Overview](images/pipeline.png)
 
 ## Getting Started
@@ -63,12 +65,15 @@ The pipeline is designed to be modular, allowing users to easily customize and e
    pip install -r requirements.txt
    ```
 
+3. Create a new folder `data` and create subfolders with numeric names (e.g. `1`, `2`,...) for each omic dataset. Also, create a folder `labels` for storing the labels.
+IMPORTANT: Each subfolder should contain a CSV file with the omic data, and the `labels` folder should contain a CSV file with the labels. All these must have a common sample ID column to identify the samples.
+
 ## Usage
 
 For step-step understanding of the pipeline, please refer to the [notebook](execute_step-by-step.ipynb).
 
 ```bash
-python3 main.py --data_folder "0_new_data" \ #name of the folder containing the data
+python3 main.py --data_folder "0_new_data" \ #name of the folder containing the omic-data stored in `data` folder
                 --stratify \ #whether to stratify the data, if not then use --no_stratify
                 --CV \ # whether to use cross-validation, if not then use --no_CV
                 --n_splits 5 \ # number of splits for cross-validation in case of CV
