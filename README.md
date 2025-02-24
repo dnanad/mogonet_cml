@@ -17,7 +17,10 @@ This repository contains a comprehensive pipeline for multi-omic data analysis, 
 
 ## Introduction
 
-Multi-omic data analysis involves integrating and analyzing multiple types of omics data (e.g., cfRNA, metabolomics) to gain a holistic understanding of biological systems. This pipeline leverages the MOGONET framework to apply Graph Neural Networks (GNNs) for this purpose and includes additional components for preprocessing, classical ML model evaluation, and result aggregation.
+Multi-omic data analysis involves integrating and analyzing multiple types of omics data to gain a holistic understanding of biological systems. This pipeline leverages the MOGONET framework to apply Graph Neural Networks (GNNs) for this purpose and includes additional components for preprocessing, classical ML model evaluation, and result aggregation. Its is adapted from the original MOGONET implementation by [Wang et al. (2021)](https://github.com/txWang/MOGONET.git). We have adpated for cfRNa and Metabolomics data.
+
+![MOGONET](images/mogonet.png)
+
 
 ## Features
 
@@ -34,6 +37,11 @@ The pipeline consists of the following main scripts:
 2. **mogonet.py**: Core script for training the MOGONET model.
 3. **cml.py**: Implements classical machine learning models for baseline performance.
 4. **result_aggregator.py**: Aggregates and compares results from classical ML and MOGONET models.
+5. **biomarker.py**: Identifies biomarkers from the MOGONET model.
+
+The pipeline is designed to be modular, allowing users to easily customize and extend it for their own datasets and models.
+
+![Pipeline Overview](images/pipeline.png)
 
 ## Getting Started
 
