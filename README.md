@@ -73,7 +73,7 @@ IMPORTANT: Each subfolder should contain a CSV file with the omic data, and the 
 For step-step understanding of the pipeline, please refer to the [notebook](execute_step-by-step.ipynb).
 
 ```bash
-python3 main.py --data_folder "0_new_data" \ #name of the folder containing the omic-data stored in `data` folder
+python3 main.py --data_folder "0_new_data" \ #name of the folder containing the omic-data 
                 --stratify \ #whether to stratify the data, if not then use --no_stratify
                 --CV \ # whether to use cross-validation, if not then use --no_CV
                 --n_splits 5 \ # number of splits for cross-validation in case of CV
