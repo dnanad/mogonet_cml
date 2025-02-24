@@ -2,6 +2,8 @@
 import os
 import pickle
 import pandas as pd
+import argparse
+import json
 
 # import functions from project modules
 from models import construct_model
@@ -23,6 +25,14 @@ def main(
     Args: None
     Returns: None
     """
+    print("Running CML model training")
+    print(f"Data folder: {data_folder}")
+    print(f"CML model: {cml_model}")
+    print(f"Number of splits: {n_splits}")
+    print(f"CV: {CV}")
+    print(f"Stratify: {stratify}")
+    print(f"Test mode: {test_mode}")
+
     # Set the mode
     mode = "test" if test_mode else "gridsearch"
 
@@ -173,14 +183,56 @@ def main(
     return
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="CML Model Training")
+    parser.add_argument("--data_folder", required=True, help="Path to the data folder")
+    parser.add_argument(
+        "--cml_models", type=json.loads, required=True, help="List of CML models to use"
+    )
+    parser.add_argument(
+        "--n_splits",
+        type=int,
+        required=True,
+        help="Number of splits for cross-validation",
+    )
+    parser.add_argument(
+        "--CV", action="store_true", help="Whether to use cross-validation"
+    )
+    parser.add_argument(
+        "--no_CV", action="store_false", dest="CV", help="Do not use cross-validation"
+    )
+    parser.add_argument("--stratify", action="store_true", help="Stratify!")
+    parser.add_argument(
+        "--no_stratify", action="store_false", dest="stratify", help="Do not stratify"
+    )
+    parser.add_argument("--test_mode", action="store_true", help="Run in test mode")
+    parser.add_argument(
+        "--no_test_mode",
+        action="store_false",
+        dest="test_mode",
+        help="Do not run in test mode",
+    )
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == "__main__":
-    for cml_model in ["XGBC", "DTC", "RFC", "SVC", "LRC", "ElasticNet"]:
+    args = parse_args()
+    for cml_model in args.cml_models:
         main(
-            data_folder="0_new_data_0.05",  # "cfrna_metabo_disc225(0.001_95%)_TriStrat2",
-            # "cfrna_disc225(0.001_95%)",  # "cfrna_metabo_disc225",  # "cfrna_disc225",  # "metabo_disc225",  # "cfrna_disc225",  # "cfrna_metabo_disc225",  # "trial",  # "PE_cfRNA",  # "TEST_DATA",  # "PE_cfRNA"  # "TEST_DATA"  # "ROSMAP"
+            data_folder=args.data_folder,
             cml_model=cml_model,
-            n_splits=5,
-            CV=True,
-            stratify=True,
-            test_mode=False,
+            n_splits=args.n_splits,
+            CV=args.CV,
+            stratify=args.stratify,
+            test_mode=args.test_mode,
         )
+        # main(
+        #     data_folder="0_new_data_0.05",  # "cfrna_metabo_disc225(0.001_95%)_TriStrat2",
+        #     # "cfrna_disc225(0.001_95%)",  # "cfrna_metabo_disc225",  # "cfrna_disc225",  # "metabo_disc225",  # "cfrna_disc225",  # "cfrna_metabo_disc225",  # "trial",  # "PE_cfRNA",  # "TEST_DATA",  # "PE_cfRNA"  # "TEST_DATA"  # "ROSMAP"
+        #     cml_model=cml_model,
+        #     CV=True,
+        #     n_splits=5,
+        #     stratify=True,
+        #     test_mode=False,
+        # )
