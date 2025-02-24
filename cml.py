@@ -1,3 +1,12 @@
+"""
+==============================================================================
+Created on Tue 25 Feb 2025 00:08:00
+Author: Anand Deshpande
+Script: cml.py
+Description: This script is used to train the CML model. The script is called from main.py.
+==============================================================================
+"""
+
 # import packages
 import os
 import pickle
