@@ -1,7 +1,8 @@
 # agrregate all the scores in one df
-from unittest import result
+
 import pandas as pd
 import os
+import argparse
 from termcolor import colored
 from utils import score_plot_new
 
@@ -13,8 +14,14 @@ def main(
     stratify: bool,
     num_epoch_pretrain: int,
     num_epoch: int,
-    mogonet_model: str,
+    # mogonet_model: str,
 ) -> None:
+    print(colored("Aggregating results", "red"))
+    print(colored(f"Data folder: {data_folder}", "green"))
+    print(colored(f"CV: {CV}", "green"))
+    print(colored(f"Stratify: {stratify}", "green"))
+    print(colored(f"Number of pretrain epochs: {num_epoch_pretrain}", "green"))
+    print(colored(f"Number of epochs: {num_epoch}", "green"))
     # load the scores for mogonet for the mogonet_model
 
     rootpath = os.path.dirname(os.path.realpath(__file__))
@@ -41,13 +48,17 @@ def main(
         # model_folder_path = os.path.join(rootpath, model_folder)
 
     # exact_model for mogonet
-    numerical_identity = (
-        str(num_epoch_pretrain) + "_" + str(num_epoch) + "_" + mogonet_model
-    )
+    location_folder = str(num_epoch_pretrain) + "_" + str(num_epoch)
+    # extract the mogonet_model name data/0_new_data_0.05/strat/CV/models/400_1200/20250224-160935. The last part is the mogonet_model
 
-    exact_model = os.path.join(
-        model_folder_path, str(num_epoch_pretrain) + "_" + str(num_epoch), mogonet_model
-    )
+    exact_model_location = os.path.join(model_folder_path, location_folder)
+
+    # extract the folder name inside the exact_model_location
+    mogonet_model = os.listdir(exact_model_location)[0]
+
+    numerical_identity = location_folder + "_" + mogonet_model
+    exact_model = os.path.join(exact_model_location, mogonet_model)
+
     mogonet_score_file = "mogonet_" + numerical_identity + "_detail_scores.csv"
     score_path = os.path.join(exact_model, mogonet_score_file)
     # print(colored(score_path, "green"))
@@ -83,6 +94,7 @@ def main(
     result_file_name = "final_scores_" + result_file_name_suffix + ".csv"
     result_file_path = os.path.join(result_folder, result_file_name)
     final_scores.to_csv(result_file_path)
+    print("Final scores saved at: ", result_file_path)
 
     # score_plot_new(path, info, save_path)
     score_plot_new(
@@ -92,43 +104,47 @@ def main(
     )
 
 
-if __name__ == "__main__":
-    main(
-        data_folder="0_new_data_0.05",
-        # "cfrna_metabo_disc225(0.001_95%)_TriStrat2",
-        # "cfrna_metabo_disc225(0.001_95%)",  # "cfrna_metabo_disc225",  # "cfrna_disc225",  # "cfrna_disc225",  # "cfrna_metabo_disc225",  # "trial"  # "discovery_cohort"  # "PE_cfRNA"
-        CV=True,
-        num_epoch_pretrain=400,
-        num_epoch=1200,
-        stratify=True,
-        mogonet_model="20240610-151416",
-        # "20240610-144922",  # 0.05 strat
-        # "20240610-144001",  # 0.05 no_strat
-        # "20240610-131020",  # new data orig no strat
-        # "20240610-130634",  # new data orig strat
-        # "20240610-120507",  # new data strat
-        # "20240610-115805",  # new data no strat
-        # "20240408-013504",  # "cfrna_metabo_disc225(0.001_95%)_TriStrat2"
-        # "20240408-005942",  # "cfrna_metabo_disc225(0.001_95%)_TriStrat"
-        # "20240124-204913"
-        # "20240124-202506"
-        # "20240123-160739"  # cpm95_cfrna001 strat_CV 400_1200
-        # "20240122-190025"  # 10_CV
-        # "20240122-180033"  # cpm95_cfrna001_metabo2 strat_CV 400_1200
-        # "20240124-202506",  # cpm95_cfrna001_metabo2 no_strat_CV 400_1200
-        # "20240122-161105"  # cpm_cfrna_metabo strat_CV 400_1200
-        # "20240119-110327"  # mteabo no_strat_CV 400_1200
-        # "20240119-105801"  # metabo strat_CV 400_1200
-        # "20240119-102921"  # 70-30 start_CV 400_1200
-        # "20240119-102406"  # 70-30 no_strat_CV 400_1200
-        # "20240118-195725"  # cfRNA strat_CV 400_1200
-        # "20240119-112622"  # cfRNA no_strat_CV 400_1200
-        # "20240118-193318"  # "20240118-185531"  # strat_CV 400_1200
-        # "20240118-192721"  # "20240118-183700"  # no_strat_CV 400_1200
-        # "20240118-174447"  # no_strat_NO_CV 400_1200
-        # "20240117-140446"  # strat_CV 400_1200
-        # "20240117-133600",  # no_strat_CV 300_1200
-        # "20240112-185800",  # no_strat_NO_CV
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Aggregate results for multi-omic analysis"
     )
-    # "20230915-021156")
-    # "20230914-223605")
+    parser.add_argument("--data_folder", required=True, help="Path to the data folder")
+    parser.add_argument(
+        "--CV", action="store_true", help="Whether to use cross-validation"
+    )
+    parser.add_argument(
+        "--no_CV", action="store_false", dest="CV", help="Do not use cross-validation"
+    )
+    parser.add_argument("--stratify", action="store_true", help="Stratify!")
+    parser.add_argument(
+        "--no_stratify", action="store_false", dest="stratify", help="Do not stratify"
+    )
+    parser.add_argument(
+        "--num_epoch_pretrain",
+        type=int,
+        required=True,
+        help="Number of pretrain epochs",
+    )
+    parser.add_argument("--num_epoch", type=int, required=True, help="Number of epochs")
+
+    args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(
+        data_folder=args.data_folder,
+        CV=args.CV,
+        stratify=args.stratify,
+        num_epoch_pretrain=args.num_epoch_pretrain,
+        num_epoch=args.num_epoch,
+    )
+    # main(
+    #     data_folder="0_new_data_0.05",
+    #     CV=True,
+    #     num_epoch_pretrain=400,
+    #     num_epoch=1200,
+    #     stratify=True,
+    #     mogonet_model="20240610-151416",
+    # )
