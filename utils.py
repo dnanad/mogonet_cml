@@ -1660,4 +1660,5 @@ def score_plot_new(path, info, save_path):
     save_as = info + ".png"
     save_path = os.path.join(save_path, save_as)
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
+    print("Saved figure at: ", save_path)
     plt.show()
