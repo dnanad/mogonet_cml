@@ -26,19 +26,18 @@ Steps:
 15. Save the common features for CML
 16. Save the labels for CML
 """
-from calendar import c
-from genericpath import exists
-from turtle import st
-import comm
+
 import pandas as pd
 import os
-import pickle
+import argparse
+import json
 
 from sklearn import preprocessing
 from utils import (
     # import_process_datafile,
     # get_label_dict,
     create_dict_from_col,
+    labels_to_startify_data,
     save_feat_name,
     train_test_save,
     # dataset_summary,
@@ -55,18 +54,31 @@ from utils import (
 
 
 def main(
-    data_folder: str,
-    stratify: bool,
-    strat_col_list: list,
-    test_size: float,
+    data_folder: str,  # path to the data folder
+    stratify: bool,  # whether to stratify the data
+    strat_col_list: list,  # stratify w.r.t. list of columns w.r.t.
+    test_size: float,  # test size for train-test split
     omic_normalize_dict: dict,  # values are boolean
     da_omics_dict: dict,  # values are boolean
     filter_wrt_dict: dict,  # values are string
     method_dict: str,  # values are string
     da_threshold_dict: dict,  # values are float
-    CV: bool,
-    n_splits: int,
+    CV: bool,  # whether to use cross-validation
+    n_splits: int,  # number of splits for cross-validation
 ):
+    print("Preprocessing with the following parameters:")
+    print(f"Data Folder: {data_folder}")
+    print(f"Stratify: {stratify}")
+    print(f"Stratification Columns: {strat_col_list}")
+    print(f"Test Size: {test_size}")
+    print(f"Omic Normalize Dict: {omic_normalize_dict}")
+    print(f"DA Omics Dict: {da_omics_dict}")
+    print(f"Filter With Respect Dict: {filter_wrt_dict}")
+    print(f"Method Dict: {method_dict}")
+    print(f"DA Threshold Dict: {da_threshold_dict}")
+    print(f"Cross Validation: {CV}")
+    print(f"Number of Splits: {n_splits}")
+
     # creta a path to the data folder
     rootpath = os.path.dirname(os.path.realpath(__file__))
     data_folder_path = os.path.join(rootpath, "data", data_folder)
@@ -74,6 +86,8 @@ def main(
     # create a path to the labels
     labels_folder_path = os.path.join(data_folder_path, "labels")
     label_files = os.listdir(labels_folder_path)
+    if not label_files:
+        raise FileNotFoundError("No label files found in the labels folder.")
     labels = label_files[0]
     labels_path = os.path.join(data_folder_path, "labels", labels)
 
@@ -85,26 +99,36 @@ def main(
     sample_ids_dict = preprocessing_omic_data(omics_list, data_folder_path)
     sample_folder = os.path.join(data_folder_path, "samples")
 
-    # save sample ids
+    # Save sample ids
     save_sample_ids(sample_ids_dict, sample_folder)
-    # read the labels
+
+    # Read the labels
     labels_df = pd.read_csv(labels_path)
-    # labels
+    if labels_df.empty:
+        raise ValueError("Labels dataframe is empty.")
+
+    # Create labels dictionary
     labels_dict = create_dict_from_col(
         labels_df, "Maternal_woman_id", "fetal_near_miss"
     )
     X = labels_df["Maternal_woman_id"]
     y = labels_df["fetal_near_miss"]
-    # Assuming `df` is your DataFrame and `cols` is your list of column names
-    if stratify:
-        labels_df["strat_col"] = labels_df[strat_col_list].apply(
-            lambda row: "_".join(row.values.astype(str)), axis=1
-        )
-        y_strat = labels_df["strat_col"]
-        strat_dict = create_dict_from_col(labels_df, "Maternal_woman_id", "strat_col")
-    else:
-        y_strat = y
-        strat_dict = labels_dict
+
+    # Labels to stratify the data
+    y_strat, strat_dict = labels_to_startify_data(
+        stratify, labels_df, strat_col_list, y, labels_dict
+    )
+
+    # if stratify:
+    #     labels_df["strat_col"] = labels_df[strat_col_list].apply(
+    #         lambda row: "_".join(row.values.astype(str)), axis=1
+    #     )
+    #     y_strat = labels_df["strat_col"]
+    #     strat_dict = create_dict_from_col(labels_df, "Maternal_woman_id", "strat_col")
+    # else:
+    #     y_strat = y
+    #     strat_dict = labels_dict
+
     common_sample_ids = X.tolist()
 
     # save the common sample ids
@@ -455,28 +479,114 @@ def main(
     print("Preprocessing completed!")
 
 
-if __name__ == "__main__":
-    main(
-        data_folder="0_new_data_0.05",  
-        strat_col_list=["Trimester", "fetal_near_miss"],
-        test_size=0.2,
-        omic_normalize_dict={
-            1: True,
-            2: True,
-        },  # {1: True, 2: True},  # {1: True, 2: True, 3: False},
-        da_omics_dict={
-            1: True,
-            2: True,
-        },  # {1: True, 2: True},  # {1: True, 2: True, 3: True},
-        filter_wrt_dict={
-            1: "p-value(f-test)",
-            2: "p-value(f-test)",  
-        },  # 'p-value(t-test)', 'p-value(f-test)', 'adjusted_pvalue(f-test)', 'adjusted_pvalue(t-test)'
-        method_dict={
-            1: "bonferroni",
-            2: "bonferroni",
-        },  # "fdr_bh",#  # "bonferroni", 'fdr_bh', 'fdr_by', 'fdr_tsbh', 'fdr_tsbky'
-        da_threshold_dict={1: 0.05, 2: 0.2},
-        CV=True,  # True #Cross validation, False # No cross validation
-        n_splits=5,
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Preprocess data for multi-omic analysis"
     )
+
+    parser.add_argument("--data_folder", required=True, help="Path to the data folder")
+    parser.add_argument("--stratify", action="store_true", help="Stratify!")
+    parser.add_argument(
+        "--no_stratify", action="store_false", dest="stratify", help="Do not stratify"
+    )
+    parser.add_argument(
+        "--strat_col_list",
+        type=json.loads,
+        required=True,
+        help="List of stratification columns",
+    )
+    parser.add_argument(
+        "--test_size", type=float, required=True, help="Test size for train-test split"
+    )
+    parser.add_argument(
+        "--omic_normalize_dict",
+        type=json.loads,
+        required=True,
+        help="Dictionary for omic normalization",
+    )
+    parser.add_argument(
+        "--da_omics_dict",
+        type=json.loads,
+        required=True,
+        help="Dictionary for DA omics",
+    )
+    parser.add_argument(
+        "--filter_wrt_dict",
+        type=json.loads,
+        required=True,
+        help="Dictionary for filtering with respect to",
+    )
+    parser.add_argument(
+        "--method_dict", type=json.loads, required=True, help="Dictionary for methods"
+    )
+    parser.add_argument(
+        "--da_threshold_dict",
+        type=json.loads,
+        required=True,
+        help="Dictionary for DA thresholds",
+    )
+    parser.add_argument(
+        "--CV", action="store_true", help="Whether to use cross-validation"
+    )
+    parser.add_argument(
+        "--no_CV", action="store_false", dest="CV", help="Do not use cross-validation"
+    )
+    parser.add_argument(
+        "--n_splits",
+        type=int,
+        required=True,
+        help="Number of splits for cross-validation",
+    )
+
+    args = parser.parse_args()
+
+    # Convert string keys to integers in the dictionaries
+    args.omic_normalize_dict = {int(k): v for k, v in args.omic_normalize_dict.items()}
+    args.da_omics_dict = {int(k): v for k, v in args.da_omics_dict.items()}
+    args.filter_wrt_dict = {int(k): v for k, v in args.filter_wrt_dict.items()}
+    args.method_dict = {int(k): v for k, v in args.method_dict.items()}
+    args.da_threshold_dict = {int(k): v for k, v in args.da_threshold_dict.items()}
+
+    return args
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(
+        data_folder=args.data_folder,
+        stratify=args.stratify,
+        strat_col_list=args.strat_col_list,
+        test_size=args.test_size,
+        omic_normalize_dict=args.omic_normalize_dict,
+        da_omics_dict=args.da_omics_dict,
+        filter_wrt_dict=args.filter_wrt_dict,
+        method_dict=args.method_dict,
+        da_threshold_dict=args.da_threshold_dict,
+        CV=args.CV,
+        n_splits=args.n_splits,
+    )
+    # main(
+    #     data_folder="0_new_data_0.05",
+    #     stratify=True,
+    #     strat_col_list=["Trimester", "fetal_near_miss"],
+    #     test_size=0.2,
+    #     omic_normalize_dict={
+    #         1: True,
+    #         2: True,
+    #     },  # {1: True, 2: True},  # {1: True, 2: True, 3: False},
+    #     da_omics_dict={
+    #         1: True,
+    #         2: True,
+    #     },  # {1: True, 2: True},  # {1: True, 2: True, 3: True},
+    #     filter_wrt_dict={
+    #         1: "p-value(f-test)",
+    #         2: "p-value(f-test)",
+    #     },  # 'p-value(t-test)', 'p-value(f-test)', 'adjusted_pvalue(f-test)', 'adjusted_pvalue(t-test)'
+    #     method_dict={
+    #         1: "bonferroni",
+    #         2: "bonferroni",
+    #     },  # "fdr_bh",#  # "bonferroni", 'fdr_bh', 'fdr_by', 'fdr_tsbh', 'fdr_tsbky'
+    #     da_threshold_dict={1: 0.05, 2: 0.2},
+    #     CV=False,  # True #Cross validation, False # No cross validation
+    #     n_splits=5,
+    # )
