@@ -65,7 +65,7 @@ The pipeline is designed to be modular, allowing users to easily customize and e
 
 ## Usage
 
-For step-step understanding of the pipeline, please refer to the [notebook](execute_step-bystep.pynb).
+For step-step understanding of the pipeline, please refer to the [notebook](execute_step-by-step.ipynb).
 
 ```bash
 python3 main.py --data_folder "0_new_data" \ #name of the folder containing the data
